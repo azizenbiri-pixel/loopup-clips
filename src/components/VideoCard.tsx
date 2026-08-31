@@ -1,14 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import { Heart, MessageCircle, Music2, Play } from "lucide-react";
-import { formatCount, type VideoItem } from "@/lib/feed-data";
+import { useServerFn } from "@tanstack/react-start";
+import { formatCount } from "@/lib/feed-data";
+import type { FeedVideo } from "@/lib/videos.functions";
+import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
 
-export function VideoCard({ video }: { video: VideoItem }) {
+export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(video.likes_count);
   const [paused, setPaused] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const like = useServerFn(toggleVideoLike);
+
+  useEffect(() => {
+    setLikeCount(video.likes_count);
+  }, [video.likes_count]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -44,7 +53,19 @@ export function VideoCard({ video }: { video: VideoItem }) {
     }
   };
 
-  const likeCount = video.likes + (liked ? 1 : 0);
+  const onLike = async () => {
+    const delta = liked ? -1 : 1;
+    const previous = likeCount;
+    setLiked(!liked);
+    setLikeCount(Math.max(previous + delta, 0));
+    try {
+      const next = await like({ data: { videoId: video.id, delta } });
+      setLikeCount(next);
+    } catch {
+      setLiked(liked);
+      setLikeCount(previous);
+    }
+  };
 
   return (
     <section
@@ -53,7 +74,7 @@ export function VideoCard({ video }: { video: VideoItem }) {
     >
       <video
         ref={videoRef}
-        src={video.src}
+        src={video.video_url}
         loop
         muted
         playsInline
@@ -76,15 +97,17 @@ export function VideoCard({ video }: { video: VideoItem }) {
 
       {/* Right rail */}
       <div className="absolute bottom-28 right-3 z-20 flex flex-col items-center gap-6">
-        <img
-          src={video.avatar}
-          alt={`Photo de profil de ${video.author}`}
-          className="size-12 rounded-full border-2 border-foreground/90 bg-card object-cover"
-          loading="lazy"
-        />
+        {video.profile_pic && (
+          <img
+            src={video.profile_pic}
+            alt={`Photo de profil de ${video.username}`}
+            className="size-12 rounded-full border-2 border-foreground/90 bg-card object-cover"
+            loading="lazy"
+          />
+        )}
 
         <button
-          onClick={() => setLiked((l) => !l)}
+          onClick={onLike}
           aria-pressed={liked}
           aria-label="Like"
           className="flex flex-col items-center gap-1 transition-transform active:scale-90"
@@ -106,21 +129,21 @@ export function VideoCard({ video }: { video: VideoItem }) {
         >
           <MessageCircle className="size-9 text-foreground" strokeWidth={1.8} />
           <span className="text-xs font-semibold text-foreground text-shadow-soft">
-            {formatCount(video.comments.length)}
+            {formatCount(video.comments_count)}
           </span>
         </button>
       </div>
 
       {/* Caption */}
       <div className="absolute bottom-28 left-4 z-10 max-w-[70%] space-y-2">
-        <p className="text-base font-bold text-foreground text-shadow-soft">@{video.author}</p>
-        <p className="text-sm text-foreground/90 text-shadow-soft">{video.caption}</p>
+        <p className="text-base font-bold text-foreground text-shadow-soft">@{video.username}</p>
+        <p className="text-sm text-foreground/90 text-shadow-soft">{video.description}</p>
         <p className="flex items-center gap-2 text-xs text-foreground/80 text-shadow-soft">
-          <Music2 className="size-3.5" /> Son original — {video.author}
+          <Music2 className="size-3.5" /> Son original — {video.username}
         </p>
       </div>
 
-      <CommentsSheet video={video} open={commentsOpen} onOpenChange={setCommentsOpen} />
+      <CommentsSheet open={commentsOpen} onOpenChange={setCommentsOpen} />
     </section>
   );
 }

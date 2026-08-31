@@ -14,13 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          comments_count: number
+          created_at: string
+          description: string | null
+          id: string
+          likes_count: number
+          profile_pic: string | null
+          updated_at: string
+          user_id: string | null
+          video_url: string
+        }
+        Insert: {
+          comments_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number
+          profile_pic?: string | null
+          updated_at?: string
+          user_id?: string | null
+          video_url: string
+        }
+        Update: {
+          comments_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number
+          profile_pic?: string | null
+          updated_at?: string
+          user_id?: string | null
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "videos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_video_likes: {
+        Args: { _delta?: number; _video_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

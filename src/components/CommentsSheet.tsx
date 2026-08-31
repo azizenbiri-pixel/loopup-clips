@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { Send, X } from "lucide-react";
-import type { Comment, VideoItem } from "@/lib/feed-data";
+import type { Comment } from "@/lib/feed-data";
 
 type Props = {
-  video: VideoItem;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export function CommentsSheet({ video, open, onOpenChange }: Props) {
-  const [comments, setComments] = useState<Comment[]>(video.comments);
+export function CommentsSheet({ open, onOpenChange }: Props) {
+  const [comments, setComments] = useState<Comment[]>([]);
   const [draft, setDraft] = useState("");
 
   if (!open) return null;
