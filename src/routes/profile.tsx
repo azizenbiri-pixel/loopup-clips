@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { BottomNav } from "@/components/BottomNav";
-import { videos } from "@/lib/feed-data";
+import { videosQueryOptions } from "@/lib/videos-queries";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -9,16 +10,31 @@ export const Route = createFileRoute("/profile")({
       { name: "description", content: "Retrouve tes vidéos, tes abonnés et tes likes sur LoopUp." },
       { property: "og:title", content: "Ton profil — LoopUp" },
       { property: "og:description", content: "Tes boucles, tes abonnés et tes likes réunis." },
+      { property: "og:type", content: "profile" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(videosQueryOptions()),
+  errorComponent: () => (
+    <main className="flex h-[100dvh] items-center justify-center bg-background px-6 text-center">
+      <p className="text-sm text-muted-foreground">Impossible de charger le profil.</p>
+    </main>
+  ),
+  notFoundComponent: () => (
+    <main className="flex h-[100dvh] items-center justify-center bg-background">
+      <p className="text-sm text-muted-foreground">Page introuvable.</p>
+    </main>
+  ),
   component: Profile,
 });
 
 function Profile() {
+  const { data: videos } = useSuspenseQuery(videosQueryOptions());
+
   const stats = [
     { label: "Abonnements", value: "128" },
     { label: "Abonnés", value: "3 402" },
-    { label: "Likes", value: "58,1K" },
+    { label: "Vidéos", value: `${videos.length}` },
   ];
 
   return (
@@ -45,7 +61,7 @@ function Profile() {
       <div className="mt-8 grid grid-cols-3 gap-0.5 px-0.5">
         {videos.map((v) => (
           <div key={v.id} className="aspect-[9/16] overflow-hidden bg-card">
-            <video src={v.src} muted playsInline className="h-full w-full object-cover" />
+            <video src={v.video_url} muted playsInline className="h-full w-full object-cover" />
           </div>
         ))}
       </div>
