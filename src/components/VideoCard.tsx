@@ -17,7 +17,7 @@ export function VideoCard({ video }: { video: VideoItem }) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+        if (entry && entry.isIntersecting && entry.intersectionRatio > 0.6) {
           v.play().catch(() => undefined);
           setPaused(false);
         } else {
