@@ -1,24 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BottomNav } from "@/components/BottomNav";
+import { VideoCard } from "@/components/VideoCard";
+import { videos } from "@/lib/feed-data";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "LoopUp — Vidéos courtes en boucle" },
+      {
+        name: "description",
+        content:
+          "LoopUp : un fil de vidéos courtes en plein écran. Balaye vers le haut, like et commente en un geste.",
+      },
+      { property: "og:title", content: "LoopUp — Vidéos courtes en boucle" },
+      {
+        property: "og:description",
+        content: "Un fil vertical de vidéos courtes qui tournent en boucle. Swipe, like, commente.",
+      },
+    ],
+  }),
+  component: Feed,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Feed() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="relative h-[100dvh] w-full overflow-hidden bg-black">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        <h1 className="text-lg font-extrabold tracking-tight text-brand-gradient">LoopUp</h1>
+      </header>
+
+      <div className="no-scrollbar h-full snap-y snap-mandatory overflow-y-scroll">
+        {videos.map((v) => (
+          <VideoCard key={v.id} video={v} />
+        ))}
+      </div>
+
+      <BottomNav />
+    </main>
   );
 }
