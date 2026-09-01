@@ -65,7 +65,7 @@ export const videos: VideoItem[] = [
 
 export const formatCount = (n: number) =>
   n >= 1000000
-    ? `${(n / 1000000).toFixed(1).replace(".0", "")}M`
-    : n >= 1000
+    ? `${(n / 1000000).toFixed(2).replace(/\.?0+$/, "")}M`
+    : n >= 10000
       ? `${(n / 1000).toFixed(1).replace(".0", "")}K`
       : `${n}`;
