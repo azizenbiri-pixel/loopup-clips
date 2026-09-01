@@ -34,7 +34,8 @@ export const getVideos = createServerFn({ method: "GET" }).handler(async (): Pro
   const { data, error } = await publicClient()
     .from("videos")
     .select("id, video_url, description, profile_pic, likes_count, comments_count, profiles(username)")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
 
   if (error) throw new Error(error.message);
 
