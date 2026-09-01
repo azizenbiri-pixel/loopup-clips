@@ -3,14 +3,22 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 
-const publicClient = () =>
-  createClient<Database>(
-    process.env["SUPABASE_URL"]!,
-    process.env["SUPABASE_PUBLISHABLE_KEY"]!,
-    {
-      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+const publicClient = () => {
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
+  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers(init?.headers);
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
+          h.delete("Authorization");
+        }
+        h.set("apikey", key);
+        return fetch(input, { ...init, headers: h });
+      },
     },
-  );
+  });
+};
 
 export type FeedVideo = {
   id: string;
@@ -26,7 +34,8 @@ export const getVideos = createServerFn({ method: "GET" }).handler(async (): Pro
   const { data, error } = await publicClient()
     .from("videos")
     .select("id, video_url, description, profile_pic, likes_count, comments_count, profiles(username)")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
 
   if (error) throw new Error(error.message);
 
