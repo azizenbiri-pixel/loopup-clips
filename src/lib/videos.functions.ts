@@ -46,7 +46,7 @@ export const getVideos = createServerFn({ method: "GET" }).handler(async (): Pro
     profile_pic: v.profile_pic,
     likes_count: v.likes_count,
     comments_count: v.comments_count,
-    username: (v.profiles as { username: string } | null)?.username ?? "loopup",
+    username: (v.profiles as { username: string } | null)?.username ?? "clipclap",
   }));
 });
 

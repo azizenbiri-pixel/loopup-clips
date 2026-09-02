@@ -24,7 +24,7 @@ export const videos: VideoItem[] = [
     src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
     author: "lea.mtn",
     avatar: avatar("lea"),
-    caption: "Petite session du soir 🌙 #loopup #vibes",
+    caption: "Petite session du soir 🌙 #clipclap #vibes",
     likes: 12400,
     comments: [
       { id: "c1", user: "nino", avatar: avatar("nino"), text: "Trop stylé 🔥" },
@@ -45,7 +45,7 @@ export const videos: VideoItem[] = [
     src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     author: "mia.kdr",
     avatar: avatar("mia"),
-    caption: "POV : tu découvres LoopUp ✨",
+    caption: "POV : tu découvres ClipClap ✨",
     likes: 45120,
     comments: [
       { id: "c4", user: "yanis", avatar: avatar("yanis"), text: "Le montage 👌" },

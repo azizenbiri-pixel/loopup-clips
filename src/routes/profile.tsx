@@ -6,9 +6,9 @@ import { videosQueryOptions } from "@/lib/videos-queries";
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Ton profil — LoopUp" },
-      { name: "description", content: "Retrouve tes vidéos, tes abonnés et tes likes sur LoopUp." },
-      { property: "og:title", content: "Ton profil — LoopUp" },
+      { title: "Ton profil — ClipClap" },
+      { name: "description", content: "Retrouve tes vidéos, tes abonnés et tes likes sur ClipClap." },
+      { property: "og:title", content: "Ton profil — ClipClap" },
       { property: "og:description", content: "Tes boucles, tes abonnés et tes likes réunis." },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary" },
