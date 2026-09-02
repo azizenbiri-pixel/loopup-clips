@@ -46,7 +46,7 @@ export const getVideos = createServerFn({ method: "GET" }).handler(async (): Pro
     profile_pic: v.profile_pic,
     likes_count: v.likes_count,
     comments_count: v.comments_count,
-    username: (v.profiles as { username: string } | null)?.username ?? "loopup",
+    username: (v.profiles as { username: string } | null)?.username ?? "clipclap",
   }));
 });
 
@@ -62,4 +62,52 @@ export const toggleVideoLike = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
     return count ?? 0;
+  });
+
+export type VideoComment = {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  text: string;
+  created_at: string;
+};
+
+export const getComments = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ videoId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }): Promise<VideoComment[]> => {
+    const { data: rows, error } = await publicClient()
+      .from("comments")
+      .select("id, username, avatar_url, text, created_at")
+      .eq("video_id", data.videoId)
+      .order("created_at", { ascending: true });
+
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const addComment = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        videoId: z.string().uuid(),
+        username: z.string().trim().min(1).max(40).default("toi"),
+        avatarUrl: z.string().url().nullable().optional(),
+        text: z.string().trim().min(1).max(500),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<VideoComment> => {
+    const { data: row, error } = await publicClient()
+      .from("comments")
+      .insert({
+        video_id: data.videoId,
+        username: data.username,
+        avatar_url: data.avatarUrl ?? null,
+        text: data.text,
+      })
+      .select("id, username, avatar_url, text, created_at")
+      .single();
+
+    if (error) throw new Error(error.message);
+    return row;
   });

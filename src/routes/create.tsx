@@ -5,10 +5,10 @@ import { BottomNav } from "@/components/BottomNav";
 export const Route = createFileRoute("/create")({
   head: () => ({
     meta: [
-      { title: "Créer une vidéo — LoopUp" },
-      { name: "description", content: "Enregistre ou importe une vidéo courte à publier sur LoopUp." },
-      { property: "og:title", content: "Créer une vidéo — LoopUp" },
-      { property: "og:description", content: "Enregistre ou importe ta prochaine vidéo LoopUp." },
+      { title: "Créer une vidéo — ClipClap" },
+      { name: "description", content: "Enregistre ou importe une vidéo courte à publier sur ClipClap." },
+      { property: "og:title", content: "Créer une vidéo — ClipClap" },
+      { property: "og:description", content: "Enregistre ou importe ta prochaine vidéo ClipClap." },
     ],
   }),
   component: Create,
