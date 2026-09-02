@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Send, X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,7 +33,7 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
     },
   });
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +43,7 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
     mutation.mutate(text);
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col justify-end">
       <button
         aria-label="Fermer les commentaires"
@@ -96,6 +97,7 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
