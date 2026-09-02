@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, MessageCircle, Music2, Play } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Music2, Play, Plus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCount } from "@/lib/feed-data";
 import type { FeedVideo } from "@/lib/videos.functions";
@@ -13,6 +13,8 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [likeCount, setLikeCount] = useState(video.likes_count);
   const [paused, setPaused] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [saved, setSaved] = useState(false);
   const like = useServerFn(toggleVideoLike);
 
   useEffect(() => {
@@ -98,12 +100,25 @@ export function VideoCard({ video }: { video: FeedVideo }) {
       {/* Right rail */}
       <div className="absolute bottom-28 right-3 z-20 flex flex-col items-center gap-6">
         {video.profile_pic && (
-          <img
-            src={video.profile_pic}
-            alt={`Photo de profil de ${video.username}`}
-            className="size-12 rounded-full border-2 border-foreground/90 bg-card object-cover"
-            loading="lazy"
-          />
+          <div className="relative">
+            <img
+              src={video.profile_pic}
+              alt={`Photo de profil de ${video.username}`}
+              className="size-12 rounded-full border-2 border-foreground/90 bg-card object-cover"
+              loading="lazy"
+            />
+            <button
+              onClick={() => setFollowing((f) => !f)}
+              aria-pressed={following}
+              aria-label={following ? "Se désabonner" : "S'abonner"}
+              className="absolute -bottom-2 left-1/2 flex size-6 -translate-x-1/2 items-center justify-center rounded-full bg-primary transition-transform active:scale-90"
+            >
+              <Plus
+                className={`size-4 text-primary-foreground transition-transform ${following ? "rotate-45" : ""}`}
+                strokeWidth={3}
+              />
+            </button>
+          </div>
         )}
 
         <button
@@ -132,6 +147,22 @@ export function VideoCard({ video }: { video: FeedVideo }) {
             {formatCount(video.comments_count)}
           </span>
         </button>
+
+        <button
+          onClick={() => setSaved((s) => !s)}
+          aria-pressed={saved}
+          aria-label="Enregistrer"
+          className="flex flex-col items-center gap-1 transition-transform active:scale-90"
+        >
+          <Bookmark
+            className={saved ? "size-9 text-accent" : "size-9 text-foreground"}
+            fill={saved ? "currentColor" : "none"}
+            strokeWidth={1.8}
+          />
+          <span className="text-xs font-semibold text-foreground text-shadow-soft">
+            {saved ? "Enregistré" : "Enregistrer"}
+          </span>
+        </button>
       </div>
 
       {/* Caption */}
@@ -143,7 +174,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         </p>
       </div>
 
-      <CommentsSheet open={commentsOpen} onOpenChange={setCommentsOpen} />
+      <CommentsSheet videoId={video.id} open={commentsOpen} onOpenChange={setCommentsOpen} />
     </section>
   );
 }
