@@ -43,7 +43,7 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
   };
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col justify-end">
+    <div className="fixed inset-0 z-[60] flex flex-col justify-end">
       <button
         aria-label="Fermer les commentaires"
         className="absolute inset-0 bg-black/50"
@@ -79,7 +79,7 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
           ))}
         </div>
 
-        <form onSubmit={submit} className="flex items-center gap-2 border-t border-border p-3">
+        <form onSubmit={submit} className="flex items-center gap-2 border-t border-border p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
