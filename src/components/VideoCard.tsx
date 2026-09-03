@@ -1,10 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { Bookmark, Heart, MessageCircle, Music2, Play, Plus } from "lucide-react";
+import {
+  Bookmark,
+  Heart,
+  MessageCircle,
+  Music2,
+  Play,
+  Plus,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCount } from "@/lib/feed-data";
 import type { FeedVideo } from "@/lib/videos.functions";
 import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
+import { setMuted, useMuted } from "@/lib/mute-store";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
