@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Home, Plus, User } from "lucide-react";
+import { UploadSheet } from "@/components/UploadSheet";
 
 export function BottomNav() {
+  const [uploadOpen, setUploadOpen] = useState(false);
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-md items-center justify-around px-6 pb-[env(safe-area-inset-bottom)] pt-2">
