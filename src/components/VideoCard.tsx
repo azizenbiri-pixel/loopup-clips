@@ -6,6 +6,7 @@ import {
   Music2,
   Play,
   Plus,
+  Share2,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import type { FeedVideo } from "@/lib/videos.functions";
 import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
+import { playPop } from "@/lib/pop-sound";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
