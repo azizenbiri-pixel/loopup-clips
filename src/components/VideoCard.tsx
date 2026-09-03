@@ -65,11 +65,27 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
-      v.play().catch(() => undefined);
+      setMuted(false);
+      v.muted = false;
+      v.play().catch(() => {
+        v.muted = true;
+        setMuted(true);
+        v.play().catch(() => undefined);
+      });
       setPaused(false);
     } else {
       v.pause();
       setPaused(true);
+    }
+  };
+
+  const toggleMute = () => {
+    const v = videoRef.current;
+    const next = !muted;
+    setMuted(next);
+    if (v) {
+      v.muted = next;
+      if (!next) v.play().catch(() => undefined);
     }
   };
 
