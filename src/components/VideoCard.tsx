@@ -1,10 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { Bookmark, Heart, MessageCircle, Music2, Play, Plus } from "lucide-react";
+import {
+  Bookmark,
+  Heart,
+  MessageCircle,
+  Music2,
+  Play,
+  Plus,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCount } from "@/lib/feed-data";
 import type { FeedVideo } from "@/lib/videos.functions";
 import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
+import { setMuted, useMuted } from "@/lib/mute-store";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,7 +25,15 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [following, setFollowing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const muted = useMuted();
   const like = useServerFn(toggleVideoLike);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+    if (!muted) v.volume = 1;
+  }, [muted]);
 
   useEffect(() => {
     setLikeCount(video.likes_count);
@@ -47,11 +65,27 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
-      v.play().catch(() => undefined);
+      setMuted(false);
+      v.muted = false;
+      v.play().catch(() => {
+        v.muted = true;
+        setMuted(true);
+        v.play().catch(() => undefined);
+      });
       setPaused(false);
     } else {
       v.pause();
       setPaused(true);
+    }
+  };
+
+  const toggleMute = () => {
+    const v = videoRef.current;
+    const next = !muted;
+    setMuted(next);
+    if (v) {
+      v.muted = next;
+      if (!next) v.play().catch(() => undefined);
     }
   };
 
@@ -78,12 +112,26 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         ref={videoRef}
         src={video.video_url}
         loop
-        muted
+        muted={muted}
         playsInline
         preload="metadata"
         onClick={togglePlay}
         className="absolute inset-0 h-full w-full object-cover"
       />
+
+      <button
+        onClick={toggleMute}
+        aria-pressed={!muted}
+        aria-label={muted ? "Activer le son" : "Couper le son"}
+        className="absolute bottom-28 left-4 z-30 flex size-11 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm transition-transform active:scale-90"
+      >
+        {muted ? (
+          <VolumeX className="size-5 text-foreground" />
+        ) : (
+          <Volume2 className="size-5 text-foreground" />
+        )}
+      </button>
+
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40" />
 
@@ -166,7 +214,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
       </div>
 
       {/* Caption */}
-      <div className="absolute bottom-28 left-4 z-10 max-w-[70%] space-y-2">
+      <div className="absolute bottom-44 left-4 z-10 max-w-[70%] space-y-2">
         <p className="text-base font-bold text-foreground text-shadow-soft">@{video.username}</p>
         <p className="text-sm text-foreground/90 text-shadow-soft">{video.description}</p>
         <p className="flex items-center gap-2 text-xs text-foreground/80 text-shadow-soft">
