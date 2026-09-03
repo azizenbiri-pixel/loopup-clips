@@ -25,7 +25,15 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [following, setFollowing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const muted = useMuted();
   const like = useServerFn(toggleVideoLike);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+    if (!muted) v.volume = 1;
+  }, [muted]);
 
   useEffect(() => {
     setLikeCount(video.likes_count);
