@@ -27,6 +27,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [following, setFollowing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
   const muted = useMuted();
   const like = useServerFn(toggleVideoLike);
 
