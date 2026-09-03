@@ -6,6 +6,7 @@ import {
   Music2,
   Play,
   Plus,
+  Share2,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import type { FeedVideo } from "@/lib/videos.functions";
 import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
+import { playPop } from "@/lib/pop-sound";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +27,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [following, setFollowing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
   const muted = useMuted();
   const like = useServerFn(toggleVideoLike);
 
@@ -90,6 +93,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   };
 
   const onLike = async () => {
+    playPop();
     const delta = liked ? -1 : 1;
     const previous = likeCount;
     setLiked(!liked);
@@ -100,6 +104,30 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     } catch {
       setLiked(liked);
       setLikeCount(previous);
+    }
+  };
+
+  const onShare = async () => {
+    playPop();
+    const url =
+      typeof window !== "undefined" ? `${window.location.origin}/?v=${video.id}` : "";
+    const shareData = {
+      title: "ClipClap",
+      text: video.description
+        ? `${video.description} — @${video.username} sur ClipClap`
+        : `Regarde cette vidéo de @${video.username} sur ClipClap`,
+      url,
+    };
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      await navigator.clipboard.writeText(`${shareData.text} ${url}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* partage annulé */
     }
   };
 
