@@ -112,12 +112,26 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         ref={videoRef}
         src={video.video_url}
         loop
-        muted
+        muted={muted}
         playsInline
         preload="metadata"
         onClick={togglePlay}
         className="absolute inset-0 h-full w-full object-cover"
       />
+
+      <button
+        onClick={toggleMute}
+        aria-pressed={!muted}
+        aria-label={muted ? "Activer le son" : "Couper le son"}
+        className="absolute bottom-28 left-4 z-30 flex size-11 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm transition-transform active:scale-90"
+      >
+        {muted ? (
+          <VolumeX className="size-5 text-foreground" />
+        ) : (
+          <Volume2 className="size-5 text-foreground" />
+        )}
+      </button>
+
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40" />
 
