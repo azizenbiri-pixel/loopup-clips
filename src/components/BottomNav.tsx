@@ -19,11 +19,11 @@ export function BottomNav() {
           <span className="text-[10px] font-medium">Accueil</span>
         </Link>
 
-        <Link to="/create" aria-label="Créer" className="group -mt-1">
+        <button type="button" onClick={() => setUploadOpen(true)} aria-label="Créer" className="group -mt-1">
           <span className="flex h-11 w-16 items-center justify-center rounded-xl bg-brand-gradient shadow-glow transition-transform group-active:scale-95">
             <Plus className="size-6 text-primary-foreground" strokeWidth={3} />
           </span>
-        </Link>
+        </button>
 
         <Link
           to="/profile"
@@ -34,6 +34,8 @@ export function BottomNav() {
           <span className="text-[10px] font-medium">Profil</span>
         </Link>
       </div>
+
+      <UploadSheet open={uploadOpen} onOpenChange={setUploadOpen} />
     </nav>
   );
 }
