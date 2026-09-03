@@ -214,7 +214,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
       </div>
 
       {/* Caption */}
-      <div className="absolute bottom-28 left-4 z-10 max-w-[70%] space-y-2">
+      <div className="absolute bottom-44 left-4 z-10 max-w-[70%] space-y-2">
         <p className="text-base font-bold text-foreground text-shadow-soft">@{video.username}</p>
         <p className="text-sm text-foreground/90 text-shadow-soft">{video.description}</p>
         <p className="flex items-center gap-2 text-xs text-foreground/80 text-shadow-soft">
