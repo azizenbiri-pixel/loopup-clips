@@ -27,28 +27,90 @@ export type FeedVideo = {
   profile_pic: string | null;
   likes_count: number;
   comments_count: number;
+  views_count: number;
   username: string;
 };
+
+const SELECT =
+  "id, video_url, description, profile_pic, likes_count, comments_count, views_count, profiles(username)";
+
+type Row = {
+  id: string;
+  video_url: string;
+  description: string | null;
+  profile_pic: string | null;
+  likes_count: number;
+  comments_count: number;
+  views_count: number;
+  profiles: { username: string } | null;
+};
+
+const toFeedVideo = (v: Row): FeedVideo => ({
+  id: v.id,
+  video_url: v.video_url,
+  description: v.description,
+  profile_pic: v.profile_pic,
+  likes_count: v.likes_count,
+  comments_count: v.comments_count,
+  views_count: v.views_count ?? 0,
+  username: v.profiles?.username ?? "clipclap",
+});
 
 export const getVideos = createServerFn({ method: "GET" }).handler(async (): Promise<FeedVideo[]> => {
   const { data, error } = await publicClient()
     .from("videos")
-    .select("id, video_url, description, profile_pic, likes_count, comments_count, profiles(username)")
+    .select(SELECT)
     .order("created_at", { ascending: false })
     .order("id", { ascending: true });
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((v) => ({
-    id: v.id,
-    video_url: v.video_url,
-    description: v.description,
-    profile_pic: v.profile_pic,
-    likes_count: v.likes_count,
-    comments_count: v.comments_count,
-    username: (v.profiles as { username: string } | null)?.username ?? "clipclap",
-  }));
+  return ((data ?? []) as unknown as Row[]).map(toFeedVideo);
 });
+
+export type CreatorProfile = {
+  username: string;
+  avatar_url: string | null;
+  videos: FeedVideo[];
+  followers: number;
+  following: number;
+  total_likes: number;
+};
+
+export const getCreator = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ username: z.string().trim().min(1).max(40) }).parse(input))
+  .handler(async ({ data }): Promise<CreatorProfile> => {
+    const client = publicClient();
+
+    const { data: profile } = await client
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .eq("username", data.username)
+      .maybeSingle();
+
+    let videos: FeedVideo[] = [];
+    if (profile) {
+      const { data: rows, error } = await client
+        .from("videos")
+        .select(SELECT)
+        .eq("user_id", profile.id)
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(error.message);
+      videos = ((rows ?? []) as unknown as Row[]).map(toFeedVideo);
+    }
+
+    const total_likes = videos.reduce((s, v) => s + v.likes_count, 0);
+    const seed = [...data.username].reduce((s, c) => s + c.charCodeAt(0), 0);
+
+    return {
+      username: data.username,
+      avatar_url: profile?.avatar_url ?? videos[0]?.profile_pic ?? null,
+      videos,
+      followers: Math.round(total_likes / 4) + (seed % 500) + 120,
+      following: 40 + (seed % 260),
+      total_likes,
+    };
+  });
 
 export const toggleVideoLike = createServerFn({ method: "POST" })
   .inputValidator((input) =>
