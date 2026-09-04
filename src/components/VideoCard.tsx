@@ -214,7 +214,10 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         </button>
 
         <button
-          onClick={() => setCommentsOpen(true)}
+          onClick={() => {
+            playPop();
+            setCommentsOpen(true);
+          }}
           aria-label="Commentaires"
           className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
@@ -225,7 +228,10 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         </button>
 
         <button
-          onClick={() => setSaved((s) => !s)}
+          onClick={() => {
+            playPop();
+            setSaved((s) => !s);
+          }}
           aria-pressed={saved}
           aria-label="Enregistrer"
           className="flex flex-col items-center gap-1 transition-transform active:scale-90"
@@ -239,6 +245,27 @@ export function VideoCard({ video }: { video: FeedVideo }) {
             {saved ? "Enregistré" : "Enregistrer"}
           </span>
         </button>
+
+        <div className="relative flex flex-col items-center">
+          <button
+            onClick={onShare}
+            aria-label="Partager"
+            className="flex flex-col items-center gap-1 transition-transform active:scale-90"
+          >
+            <Share2 className="size-9 text-foreground" strokeWidth={1.8} />
+            <span className="text-xs font-semibold text-foreground text-shadow-soft">
+              Partager
+            </span>
+          </button>
+          {copied && (
+            <span
+              role="status"
+              className="absolute right-full top-1 mr-2 whitespace-nowrap rounded-full bg-card px-3 py-1 text-xs font-semibold text-card-foreground shadow-glow"
+            >
+              Lien copié
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Caption */}
