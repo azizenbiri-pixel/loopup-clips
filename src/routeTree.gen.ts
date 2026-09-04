@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as CreatorUsernameRouteImport } from './routes/creator.$username'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorUsernameRoute = CreatorUsernameRouteImport.update({
+  id: '/creator/$username',
+  path: '/creator/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/profile': typeof ProfileRoute
+  '/creator/$username': typeof CreatorUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/profile': typeof ProfileRoute
+  '/creator/$username': typeof CreatorUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/profile': typeof ProfileRoute
+  '/creator/$username': typeof CreatorUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/profile'
+  fullPaths: '/' | '/create' | '/profile' | '/creator/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/profile'
-  id: '__root__' | '/' | '/create' | '/profile'
+  to: '/' | '/create' | '/profile' | '/creator/$username'
+  id: '__root__' | '/' | '/create' | '/profile' | '/creator/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
   ProfileRoute: typeof ProfileRoute
+  CreatorUsernameRoute: typeof CreatorUsernameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creator/$username': {
+      id: '/creator/$username'
+      path: '/creator/$username'
+      fullPath: '/creator/$username'
+      preLoaderRoute: typeof CreatorUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
   ProfileRoute: ProfileRoute,
+  CreatorUsernameRoute: CreatorUsernameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
