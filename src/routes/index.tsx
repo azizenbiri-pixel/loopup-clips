@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { VideoCard } from "@/components/VideoCard";
 import { videosQueryOptions } from "@/lib/videos-queries";
@@ -38,6 +39,29 @@ export const Route = createFileRoute("/")({
 
 function Feed() {
   const { data: videos } = useSuspenseQuery(videosQueryOptions());
+  const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    if (t) startRef.current = { x: t.clientX, y: t.clientY };
+  };
+
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s = startRef.current;
+    const t = e.changedTouches[0];
+    startRef.current = null;
+    if (!s || !t) return;
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (dx < -70 && Math.abs(dy) < 80) {
+      const el = scrollRef.current;
+      const index = el ? Math.round(el.scrollTop / el.clientHeight) : 0;
+      const current = videos[Math.min(Math.max(index, 0), videos.length - 1)];
+      if (current) navigate({ to: "/creator/$username", params: { username: current.username } });
+    }
+  };
 
   return (
     <main className="relative h-[100dvh] w-full overflow-hidden bg-black">
@@ -45,7 +69,12 @@ function Feed() {
         <h1 className="text-lg font-extrabold tracking-tight text-brand-gradient">ClipClap</h1>
       </header>
 
-      <div className="no-scrollbar h-full snap-y snap-mandatory overflow-y-scroll">
+      <div
+        ref={scrollRef}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="no-scrollbar h-full snap-y snap-mandatory overflow-y-scroll"
+      >
         {videos.map((v) => (
           <VideoCard key={v.id} video={v} />
         ))}
