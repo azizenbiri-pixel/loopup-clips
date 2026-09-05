@@ -1,15 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Bookmark,
-  Heart,
-  MessageCircle,
-  Music2,
-  Play,
-  Plus,
-  Share2,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Bookmark, Heart, MessageCircle, Music2, Play, Plus, Share2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { formatCount } from "@/lib/feed-data";
 import type { FeedVideo } from "@/lib/videos.functions";
@@ -17,6 +8,7 @@ import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
 import { playPop } from "@/lib/pop-sound";
+import { toggleFollow, useLocalProfile } from "@/lib/local-profile";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,11 +17,14 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [likeCount, setLikeCount] = useState(video.likes_count);
   const [paused, setPaused] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [following, setFollowing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const muted = useMuted();
+  const profile = useLocalProfile();
   const like = useServerFn(toggleVideoLike);
+
+  const isMine = profile.username === video.username;
+  const following = profile.following.includes(video.username);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -50,7 +45,11 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry && entry.isIntersecting && entry.intersectionRatio > 0.6) {
-          v.play().catch(() => undefined);
+          v.play().catch(() => {
+            v.muted = true;
+            setMuted(true);
+            v.play().catch(() => undefined);
+          });
           setPaused(false);
         } else {
           v.pause();
@@ -62,6 +61,25 @@ export function VideoCard({ video }: { video: FeedVideo }) {
 
     observer.observe(el);
     return () => observer.disconnect();
+  }, []);
+
+  // Pause + coupe le son dès que l'app passe en arrière-plan
+  useEffect(() => {
+    const onVisibility = () => {
+      const v = videoRef.current;
+      if (!v) return;
+      if (document.visibilityState === "hidden") {
+        v.muted = true;
+        v.pause();
+        setPaused(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onVisibility);
+    };
   }, []);
 
   const togglePlay = () => {
@@ -79,16 +97,6 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     } else {
       v.pause();
       setPaused(true);
-    }
-  };
-
-  const toggleMute = () => {
-    const v = videoRef.current;
-    const next = !muted;
-    setMuted(next);
-    if (v) {
-      v.muted = next;
-      if (!next) v.play().catch(() => undefined);
     }
   };
 
@@ -140,26 +148,11 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         ref={videoRef}
         src={video.video_url}
         loop
-        muted={muted}
         playsInline
         preload="metadata"
         onClick={togglePlay}
         className="absolute inset-0 h-full w-full object-cover"
       />
-
-      <button
-        onClick={toggleMute}
-        aria-pressed={!muted}
-        aria-label={muted ? "Activer le son" : "Couper le son"}
-        className="absolute bottom-28 left-4 z-30 flex size-11 items-center justify-center rounded-full bg-background/50 backdrop-blur-sm transition-transform active:scale-90"
-      >
-        {muted ? (
-          <VolumeX className="size-5 text-foreground" />
-        ) : (
-          <Volume2 className="size-5 text-foreground" />
-        )}
-      </button>
-
 
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/40" />
 
@@ -175,27 +168,35 @@ export function VideoCard({ video }: { video: FeedVideo }) {
 
       {/* Right rail */}
       <div className="absolute bottom-28 right-3 z-20 flex flex-col items-center gap-6">
-        {video.profile_pic && (
-          <div className="relative">
+        <div className="relative">
+          <Link
+            to="/creator/$username"
+            params={{ username: video.username }}
+            aria-label={`Voir le profil de ${video.username}`}
+          >
             <img
-              src={video.profile_pic}
+              src={
+                video.profile_pic ??
+                `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(video.username)}`
+              }
               alt={`Photo de profil de ${video.username}`}
               className="size-12 rounded-full border-2 border-foreground/90 bg-card object-cover"
               loading="lazy"
             />
+          </Link>
+          {!isMine && !following && (
             <button
-              onClick={() => setFollowing((f) => !f)}
-              aria-pressed={following}
-              aria-label={following ? "Se désabonner" : "S'abonner"}
-              className="absolute -bottom-2 left-1/2 flex size-6 -translate-x-1/2 items-center justify-center rounded-full bg-primary transition-transform active:scale-90"
+              onClick={() => {
+                playPop();
+                toggleFollow(video.username);
+              }}
+              aria-label="S'abonner"
+              className="absolute -bottom-2 left-1/2 flex size-6 -translate-x-1/2 items-center justify-center rounded-full bg-brand-gradient transition-all duration-300 animate-in fade-in zoom-in active:scale-90"
             >
-              <Plus
-                className={`size-4 text-primary-foreground transition-transform ${following ? "rotate-45" : ""}`}
-                strokeWidth={3}
-              />
+              <Plus className="size-4 text-primary-foreground" strokeWidth={3} />
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         <button
           onClick={onLike}

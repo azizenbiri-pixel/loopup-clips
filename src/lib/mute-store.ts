@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-let muted = true;
+let muted = false;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -24,6 +24,6 @@ export function useMuted() {
   return useSyncExternalStore(
     subscribe,
     () => muted,
-    () => true,
+    () => false,
   );
 }
