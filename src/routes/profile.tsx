@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { Camera } from "lucide-react";
+import { Camera, Pencil } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { videosQueryOptions } from "@/lib/videos-queries";
 import { updateProfile, useLocalProfile } from "@/lib/local-profile";
 import { supabase } from "@/integrations/supabase/client";
+import { EditProfileSheet } from "@/components/EditProfileSheet";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -40,6 +41,7 @@ function Profile() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const onPickAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,8 +102,11 @@ function Profile() {
             <Camera className="size-4 text-primary-foreground" />
           </button>
         </div>
-        <h1 className="mt-3 text-lg font-bold text-foreground">@{profile.username}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Créateur de boucles infinies ♾️</p>
+        <h1 className="mt-3 text-lg font-bold text-foreground">
+          {profile.displayName || `@${profile.username}`}
+        </h1>
+        <p className="text-sm text-muted-foreground">@{profile.username}</p>
+        <p className="mt-1 text-center text-sm text-muted-foreground">{profile.bio}</p>
         {busy && <p className="mt-2 text-xs text-muted-foreground">Envoi de la photo…</p>}
         {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
 
@@ -113,7 +118,17 @@ function Profile() {
             </div>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setEditOpen(true)}
+          className="mt-6 flex items-center gap-2 rounded-full bg-brand-gradient px-6 py-2.5 text-sm font-bold text-primary-foreground transition-transform active:scale-95"
+        >
+          <Pencil className="size-4" /> Modifier le profil
+        </button>
       </div>
+
+      <EditProfileSheet open={editOpen} onOpenChange={setEditOpen} />
 
       <div className="mt-8 grid grid-cols-3 gap-0.5 px-0.5">
         {videos.map((v) => (

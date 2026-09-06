@@ -7,6 +7,7 @@ import type { FeedVideo } from "@/lib/videos.functions";
 import { toggleVideoLike } from "@/lib/videos.functions";
 import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
+import { requestAudioUnlock } from "@/lib/audio-unlock";
 import { playPop } from "@/lib/pop-sound";
 import { toggleFollow, useLocalProfile } from "@/lib/local-profile";
 
@@ -45,9 +46,14 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry && entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          v.muted = false;
           v.play().catch(() => {
+            // Autoplay avec son bloqué : muet le temps du premier geste
             v.muted = true;
-            setMuted(true);
+            requestAudioUnlock(() => {
+              v.muted = false;
+              v.play().catch(() => undefined);
+            });
             v.play().catch(() => undefined);
           });
           setPaused(false);
@@ -133,7 +139,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
       }
       await navigator.clipboard.writeText(`${shareData.text} ${url}`);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 2500);
     } catch {
       /* partage annulé */
     }
@@ -263,7 +269,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
               role="status"
               className="absolute right-full top-1 mr-2 whitespace-nowrap rounded-full bg-card px-3 py-1 text-xs font-semibold text-card-foreground shadow-glow"
             >
-              Lien copié
+              Lien copié !
             </span>
           )}
         </div>
