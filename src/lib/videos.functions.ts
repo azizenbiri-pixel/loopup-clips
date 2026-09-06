@@ -173,3 +173,44 @@ export const addComment = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return row;
   });
+
+export type SavedProfile = {
+  id: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+};
+
+export const saveMyProfile = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        username: z.string().trim().min(1).max(40),
+        displayName: z.string().trim().max(60).nullable().optional(),
+        bio: z.string().trim().max(200).nullable().optional(),
+        avatarUrl: z.string().url().nullable().optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }): Promise<SavedProfile> => {
+    const client = publicClient();
+    const payload = {
+      id: data.id,
+      username: data.username,
+      display_name: data.displayName || null,
+      bio: data.bio || null,
+      avatar_url: data.avatarUrl || null,
+      is_local: true,
+    };
+
+    const { data: row, error } = await client
+      .from("profiles")
+      .upsert(payload, { onConflict: "id" })
+      .select("id, username, display_name, bio, avatar_url")
+      .single();
+
+    if (error) throw new Error(error.message);
+    return row as SavedProfile;
+  });
