@@ -5,7 +5,8 @@ import type { Database } from "@/integrations/supabase/types";
 
 const publicClient = () => {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-  return createClient<Database>(process.env["SUPABASE_URL"]!, key, {
+  const url = process.env["VITE_SUPABASE_URL"] ?? process.env["SUPABASE_URL"]!;
+  return createClient<Database>(url, key, {
     auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
     global: {
       fetch: (input, init) => {
