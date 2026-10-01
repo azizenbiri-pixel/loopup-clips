@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { formatCount } from "@/lib/feed-data";
 import type { FeedVideo } from "@/lib/videos.functions";
 import { toggleVideoLike } from "@/lib/videos.functions";
+import { ShareSheet } from "@/components/ShareSheet";
 import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
 import { requestAudioUnlock } from "@/lib/audio-unlock";
@@ -19,7 +20,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [paused, setPaused] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const muted = useMuted();
   const profile = useLocalProfile();
   const like = useServerFn(toggleVideoLike);
@@ -121,28 +122,14 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     }
   };
 
-  const onShare = async () => {
+  const shareUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/?v=${video.id}` : "";
+  const shareText = video.description
+    ? `${video.description} — @${video.username} sur ClipClap`
+    : `Regarde cette vidéo de @${video.username} sur ClipClap`;
+  const onShare = () => {
     playPop();
-    const url =
-      typeof window !== "undefined" ? `${window.location.origin}/?v=${video.id}` : "";
-    const shareData = {
-      title: "ClipClap",
-      text: video.description
-        ? `${video.description} — @${video.username} sur ClipClap`
-        : `Regarde cette vidéo de @${video.username} sur ClipClap`,
-      url,
-    };
-    try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share(shareData);
-        return;
-      }
-      await navigator.clipboard.writeText(`${shareData.text} ${url}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      /* partage annulé */
-    }
+    setShareOpen(true);
   };
 
   return (
@@ -264,14 +251,6 @@ export function VideoCard({ video }: { video: FeedVideo }) {
               Partager
             </span>
           </button>
-          {copied && (
-            <span
-              role="status"
-              className="absolute right-full top-1 mr-2 whitespace-nowrap rounded-full bg-card px-3 py-1 text-xs font-semibold text-card-foreground shadow-glow"
-            >
-              Lien copié !
-            </span>
-          )}
         </div>
       </div>
 
@@ -285,6 +264,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
       </div>
 
       <CommentsSheet videoId={video.id} open={commentsOpen} onOpenChange={setCommentsOpen} />
+      <ShareSheet open={shareOpen} onOpenChange={setShareOpen} url={shareUrl} text={shareText} />
     </section>
   );
 }
