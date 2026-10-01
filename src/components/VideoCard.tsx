@@ -264,6 +264,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
       </div>
 
       <CommentsSheet videoId={video.id} open={commentsOpen} onOpenChange={setCommentsOpen} />
+      <ShareSheet open={shareOpen} onOpenChange={setShareOpen} url={shareUrl} text={shareText} />
     </section>
   );
 }
