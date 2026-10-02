@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { creatorQueryOptions } from "@/lib/videos-queries";
 import { formatCount } from "@/lib/feed-data";
 import { toggleFollow, useLocalProfile } from "@/lib/local-profile";
+import { FeedError } from "@/components/FeedError";
 
 export const Route = createFileRoute("/creator/$username")({
   head: ({ params }) => ({
@@ -22,11 +23,7 @@ export const Route = createFileRoute("/creator/$username")({
     ],
   }),
   loader: ({ context, params }) => context.queryClient.ensureQueryData(creatorQueryOptions(params.username)),
-  errorComponent: () => (
-    <main className="flex h-[100dvh] items-center justify-center bg-background px-6 text-center">
-      <p className="text-sm text-muted-foreground">Impossible de charger ce profil.</p>
-    </main>
-  ),
+  errorComponent: ({ reset }) => <FeedError reset={reset} label="ce profil" />,
   component: CreatorPage,
 });
 
