@@ -7,6 +7,7 @@ import { videosQueryOptions } from "@/lib/videos-queries";
 import { updateProfile, useLocalProfile } from "@/lib/local-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { EditProfileSheet } from "@/components/EditProfileSheet";
+import { FeedError } from "@/components/FeedError";
 
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;
 
@@ -22,11 +23,7 @@ export const Route = createFileRoute("/profile")({
     ],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(videosQueryOptions()),
-  errorComponent: () => (
-    <main className="flex h-[100dvh] items-center justify-center bg-background px-6 text-center">
-      <p className="text-sm text-muted-foreground">Impossible de charger le profil.</p>
-    </main>
-  ),
+  errorComponent: ({ reset }) => <FeedError reset={reset} label="ton profil" />,
   notFoundComponent: () => (
     <main className="flex h-[100dvh] items-center justify-center bg-background">
       <p className="text-sm text-muted-foreground">Page introuvable.</p>

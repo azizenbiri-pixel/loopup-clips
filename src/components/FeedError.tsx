@@ -6,7 +6,7 @@ const MAX_AUTO_RETRIES = 6;
 
 // Shown when the feed fails to load: retries automatically in the background
 // so a temporary backend hiccup recovers without the user doing anything.
-export function FeedError({ reset }: { reset?: () => void }) {
+export function FeedError({ reset, label = "le fil" }: { reset?: () => void; label?: string }) {
   const router = useRouter();
   const [attempt, setAttempt] = useState(0);
   const giveUp = attempt >= MAX_AUTO_RETRIES;
@@ -28,11 +28,11 @@ export function FeedError({ reset }: { reset?: () => void }) {
   return (
     <main className="flex h-[100dvh] flex-col items-center justify-center gap-4 bg-background px-6 text-center">
       {giveUp ? (
-        <p className="text-sm text-muted-foreground">Le fil ne répond pas pour le moment.</p>
+        <p className="text-sm text-muted-foreground">Impossible de joindre {label} pour le moment.</p>
       ) : (
         <>
           <RotateCw className="h-6 w-6 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Connexion au fil en cours…</p>
+          <p className="text-sm text-muted-foreground">Chargement de {label}…</p>
         </>
       )}
       <button
