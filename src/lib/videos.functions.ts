@@ -57,16 +57,33 @@ const toFeedVideo = (v: Row): FeedVideo => ({
   username: v.profiles?.username ?? "clipclap",
 });
 
+// The backend can be briefly unreachable (cold start, wake-up after idle):
+// retry a few times before giving up so the feed doesn't fail on a blip.
+async function withRetry<T>(fn: () => Promise<T>, attempts = 4): Promise<T> {
+  let lastError: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+    }
+  }
+  throw lastError;
+}
+
 export const getVideos = createServerFn({ method: "GET" }).handler(async (): Promise<FeedVideo[]> => {
-  const { data, error } = await publicClient()
-    .from("videos")
-    .select(SELECT)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: true });
+  return withRetry(async () => {
+    const { data, error } = await publicClient()
+      .from("videos")
+      .select(SELECT)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: true });
 
-  if (error) throw new Error(error.message);
+    if (error) throw new Error(error.message);
 
-  return ((data ?? []) as unknown as Row[]).map(toFeedVideo);
+    return ((data ?? []) as unknown as Row[]).map(toFeedVideo);
+  });
 });
 
 export type CreatorProfile = {

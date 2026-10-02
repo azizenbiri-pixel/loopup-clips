@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRef } from "react";
 import { BottomNav } from "@/components/BottomNav";
 import { VideoCard } from "@/components/VideoCard";
+import { FeedError } from "@/components/FeedError";
 import { videosQueryOptions } from "@/lib/videos-queries";
 
 export const Route = createFileRoute("/")({
@@ -24,11 +25,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(videosQueryOptions()),
-  errorComponent: () => (
-    <main className="flex h-[100dvh] items-center justify-center bg-background px-6 text-center">
-      <p className="text-sm text-muted-foreground">Impossible de charger le fil pour le moment.</p>
-    </main>
-  ),
+  errorComponent: ({ reset }) => <FeedError reset={reset} />,
   notFoundComponent: () => (
     <main className="flex h-[100dvh] items-center justify-center bg-background">
       <p className="text-sm text-muted-foreground">Page introuvable.</p>
