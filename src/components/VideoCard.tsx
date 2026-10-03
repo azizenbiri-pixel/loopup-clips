@@ -127,8 +127,16 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const shareText = video.description
     ? `${video.description} — @${video.username} sur ClipClap`
     : `Regarde cette vidéo de @${video.username} sur ClipClap`;
-  const onShare = () => {
+  const onShare = async () => {
     playPop();
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: "ClipClap", text: shareText, url: shareUrl });
+        return;
+      } catch (e) {
+        if ((e as DOMException)?.name === "AbortError") return;
+      }
+    }
     setShareOpen(true);
   };
 
