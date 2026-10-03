@@ -30,47 +30,62 @@ export function ShareSheet({
     setTimeout(() => setNotice(null), 2500);
   };
 
-  const native = async () => {
-    playPop();
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: "ClipClap", text, url });
-        onOpenChange(false);
-      } else {
-        await copy();
-      }
-    } catch {
-      /* annulé */
-    }
+  // Opening sms:/wa.me via a real link click works inside the preview frame,
+  // where changing window.location is silently blocked.
+  const openLink = (href: string) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
-  const copy = async () => {
-    playPop();
+  const copy = async (prefix?: string) => {
     try {
       await navigator.clipboard.writeText(message);
-      flash("Lien copié !");
+      flash(prefix ? `${prefix} — lien copié !` : "Lien copié !");
     } catch {
       flash("Copie impossible");
     }
   };
 
-  const contacts = async () => {
+  // Must be called synchronously from the tap (no await before share), else the browser refuses.
+  const native = () => {
     playPop();
-    const api = (navigator as unknown as { contacts?: ContactsApi }).contacts;
-    if (api?.select) {
-      try {
-        const picked = await api.select(["name", "tel"], { multiple: false });
-        const tel = picked[0]?.tel?.[0]?.replace(/\s/g, "");
-        if (tel) {
-          window.location.href = `sms:${tel}?&body=${encodeURIComponent(message)}`;
-          return;
-        }
-      } catch {
-        return;
-      }
+    if (!navigator.share) {
+      void copy("Partage indisponible");
+      return;
     }
-    // Pas d'accès aux contacts (iOS / bureau) : feuille de partage du téléphone
-    await native();
+    navigator
+      .share({ title: "ClipClap", text, url })
+      .then(() => onOpenChange(false))
+      .catch((e: unknown) => {
+        if ((e as { name?: string })?.name === "AbortError") return;
+        void copy("Partage bloqué ici");
+      });
+  };
+
+  const sms = (tel = "") => {
+    openLink(`sms:${tel}?&body=${encodeURIComponent(message)}`);
+  };
+
+  const contacts = () => {
+    const api = (navigator as unknown as { contacts?: ContactsApi }).contacts;
+    if (!api?.select) {
+      // iPhone / ordinateur : pas d'accès direct aux contacts → feuille de partage
+      native();
+      return;
+    }
+    playPop();
+    api
+      .select(["name", "tel"], { multiple: false })
+      .then((picked) => {
+        const tel = picked[0]?.tel?.[0]?.replace(/\s/g, "");
+        if (tel) sms(tel);
+      })
+      .catch(() => native());
   };
 
   const items = [
@@ -80,7 +95,7 @@ export function ShareSheet({
       icon: MessageCircle,
       onClick: () => {
         playPop();
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+        openLink(`https://wa.me/?text=${encodeURIComponent(message)}`);
       },
     },
     {
@@ -88,10 +103,17 @@ export function ShareSheet({
       icon: MessageSquare,
       onClick: () => {
         playPop();
-        window.location.href = `sms:?&body=${encodeURIComponent(message)}`;
+        sms();
       },
     },
-    { label: "Copier le lien", icon: Link2, onClick: copy },
+    {
+      label: "Copier le lien",
+      icon: Link2,
+      onClick: () => {
+        playPop();
+        void copy();
+      },
+    },
     { label: "Plus", icon: MoreHorizontal, onClick: native },
   ];
 
