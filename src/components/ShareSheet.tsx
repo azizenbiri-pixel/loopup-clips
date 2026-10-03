@@ -131,6 +131,23 @@ export function ShareSheet({
             <X className="size-5 text-muted-foreground" />
           </button>
         </div>
+        {framed && (
+          <div className="mb-4 rounded-2xl border border-border bg-muted/40 p-3 text-center">
+            <p className="text-xs text-muted-foreground">
+              L'aperçu de l'éditeur bloque le partage du téléphone. Ouvre ClipClap en plein écran
+              pour l'avoir (AirDrop, Messages, contacts…).
+            </p>
+            <button
+              onClick={() => {
+                playPop();
+                openLink(window.location.href);
+              }}
+              className="mt-2 rounded-full bg-brand-gradient px-4 py-2 text-xs font-bold text-primary-foreground"
+            >
+              Ouvrir en plein écran
+            </button>
+          </div>
+        )}
         <div className="grid grid-cols-5 gap-2">
           {items.map(({ label, icon: Icon, onClick }) => (
             <button

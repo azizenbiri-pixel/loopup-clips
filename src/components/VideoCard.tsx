@@ -127,16 +127,27 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const shareText = video.description
     ? `${video.description} — @${video.username} sur ClipClap`
     : `Regarde cette vidéo de @${video.username} sur ClipClap`;
-  const onShare = async () => {
-    playPop();
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      try {
-        await navigator.share({ title: "ClipClap", text: shareText, url: shareUrl });
-        return;
-      } catch (e) {
-        if ((e as DOMException)?.name === "AbortError") return;
-      }
+  // Inside the editor preview frame the OS share sheet is blocked (it silently does nothing),
+  // so there we show our panel with a "open full screen" shortcut instead.
+  const isFramed = () => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
     }
+  };
+  const onShare = () => {
+    // Call share synchronously from the tap (before anything else) so the browser allows it.
+    if (!isFramed() && typeof navigator.share === "function") {
+      navigator
+        .share({ title: "ClipClap", text: shareText, url: shareUrl })
+        .catch((e: unknown) => {
+          if ((e as { name?: string })?.name !== "AbortError") setShareOpen(true);
+        });
+      playPop();
+      return;
+    }
+    playPop();
     setShareOpen(true);
   };
 
