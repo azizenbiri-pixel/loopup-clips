@@ -32,7 +32,9 @@ export function FeedError({ reset, label = "le fil" }: { reset?: () => void; lab
       ) : (
         <>
           <RotateCw className="h-6 w-6 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Chargement de {label}…</p>
+          <p className="text-sm text-muted-foreground">
+            Chargement {label === "le fil" ? "du fil" : `de ${label}`}…
+          </p>
         </>
       )}
       <button

@@ -15,7 +15,9 @@ export function ShareSheet({
   onOpenChange,
   url,
   text,
+  framed = false,
 }: {
+  framed?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   url: string;
