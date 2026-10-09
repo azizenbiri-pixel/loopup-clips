@@ -7,6 +7,8 @@ export type LocalProfile = {
   bio: string;
   avatar: string;
   following: string[];
+  saved: string[];
+  myVideos: string[];
 };
 
 const KEY = "clipclap.profile";
@@ -18,6 +20,8 @@ const DEFAULT_PROFILE: LocalProfile = {
   bio: "Créateur de boucles infinies ♾️",
   avatar: "https://api.dicebear.com/9.x/avataaars/svg?seed=moi&backgroundColor=ffd5dc",
   following: [],
+  saved: [],
+  myVideos: [],
 };
 
 let profile: LocalProfile = DEFAULT_PROFILE;
@@ -58,12 +62,25 @@ export function updateProfile(patch: Partial<LocalProfile>) {
   persist();
 }
 
+const toggleIn = (list: string[], value: string) =>
+  list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+
 export function toggleFollow(username: string) {
   load();
-  const following = profile.following.includes(username)
-    ? profile.following.filter((u) => u !== username)
-    : [...profile.following, username];
-  profile = { ...profile, following };
+  profile = { ...profile, following: toggleIn(profile.following, username) };
+  persist();
+}
+
+export function toggleSaved(videoId: string) {
+  load();
+  profile = { ...profile, saved: toggleIn(profile.saved, videoId) };
+  persist();
+}
+
+export function addMyVideo(videoId: string) {
+  load();
+  if (profile.myVideos.includes(videoId)) return;
+  profile = { ...profile, myVideos: [videoId, ...profile.myVideos] };
   persist();
 }
 
