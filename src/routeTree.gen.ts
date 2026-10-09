@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
+import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as StudioRouteImport } from './routes/studio'
 import { Route as CreatorUsernameRouteImport } from './routes/creator.$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -24,9 +26,19 @@ const CreateRoute = CreateRouteImport.update({
   path: '/create',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiscoverRoute = DiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreatorUsernameRoute = CreatorUsernameRouteImport.update({
@@ -38,34 +50,61 @@ const CreatorUsernameRoute = CreatorUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
+  '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/studio': typeof StudioRoute
   '/creator/$username': typeof CreatorUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
+  '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/studio': typeof StudioRoute
   '/creator/$username': typeof CreatorUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
+  '/discover': typeof DiscoverRoute
   '/profile': typeof ProfileRoute
+  '/studio': typeof StudioRoute
   '/creator/$username': typeof CreatorUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/profile' | '/creator/$username'
+  fullPaths:
+    | '/'
+    | '/create'
+    | '/discover'
+    | '/profile'
+    | '/studio'
+    | '/creator/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/profile' | '/creator/$username'
-  id: '__root__' | '/' | '/create' | '/profile' | '/creator/$username'
+  to:
+    | '/'
+    | '/create'
+    | '/discover'
+    | '/profile'
+    | '/studio'
+    | '/creator/$username'
+  id:
+    | '__root__'
+    | '/'
+    | '/create'
+    | '/discover'
+    | '/profile'
+    | '/studio'
+    | '/creator/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
+  DiscoverRoute: typeof DiscoverRoute
   ProfileRoute: typeof ProfileRoute
+  StudioRoute: typeof StudioRoute
   CreatorUsernameRoute: typeof CreatorUsernameRoute
 }
 
@@ -85,11 +124,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/discover': {
+      id: '/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/creator/$username': {
@@ -105,7 +158,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
+  DiscoverRoute: DiscoverRoute,
   ProfileRoute: ProfileRoute,
+  StudioRoute: StudioRoute,
   CreatorUsernameRoute: CreatorUsernameRoute,
 }
 export const routeTree = rootRouteImport
