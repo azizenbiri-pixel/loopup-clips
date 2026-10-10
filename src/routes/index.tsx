@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { setMuted, useMuted } from "@/lib/mute-store";
+import { useLocalProfile } from "@/lib/local-profile";
+import { playPop } from "@/lib/pop-sound";
 import { BottomNav } from "@/components/BottomNav";
 import { VideoCard } from "@/components/VideoCard";
 import { FeedError } from "@/components/FeedError";
@@ -35,7 +38,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Feed() {
-  const { data: videos } = useSuspenseQuery(videosQueryOptions());
+  const { data: allVideos } = useSuspenseQuery(videosQueryOptions());
+  const profile = useLocalProfile();
+  const muted = useMuted();
+  const [tab, setTab] = useState<"following" | "foryou">("foryou");
+  const videos =
+    tab === "following" ? allVideos.filter((v) => profile.following.includes(v.username)) : allVideos;
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const startRef = useRef<{ x: number; y: number } | null>(null);
@@ -62,9 +70,31 @@ function Feed() {
 
   return (
     <main className="relative h-[100dvh] w-full overflow-hidden bg-black">
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center pt-[calc(env(safe-area-inset-top)+0.75rem)]">
-        <h1 className="text-lg font-extrabold tracking-tight text-brand-gradient">ClipClap</h1>
+      <header className="absolute inset-x-0 top-0 z-30 flex justify-center gap-8 pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+        {(["following", "foryou"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => {
+              playPop();
+              setTab(t);
+              scrollRef.current?.scrollTo({ top: 0 });
+            }}
+            className={`border-b-2 pb-1 text-lg font-bold text-shadow-soft transition-colors ${
+              tab === t ? "border-primary text-foreground" : "border-transparent text-foreground/60"
+            }`}
+          >
+            {t === "following" ? "Abonnements" : "Pour toi"}
+          </button>
+        ))}
       </header>
+
+      <button
+        onClick={() => setMuted(!muted)}
+        aria-label={muted ? "Activer le son" : "Couper le son"}
+        className="absolute right-3 top-[calc(env(safe-area-inset-top)+3.5rem)] z-30 flex size-12 items-center justify-center rounded-full border border-border bg-background/50 text-2xl backdrop-blur"
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
 
       <div
         ref={scrollRef}
@@ -72,9 +102,17 @@ function Feed() {
         onTouchEnd={onTouchEnd}
         className="no-scrollbar h-full snap-y snap-mandatory overflow-y-scroll"
       >
-        {videos.map((v) => (
-          <VideoCard key={v.id} video={v} />
-        ))}
+        {videos.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
+            <p className="text-4xl">👀</p>
+            <p className="font-bold text-foreground">Aucune vidéo de tes abonnements</p>
+            <p className="text-sm text-muted-foreground">
+              Abonne-toi à des créateurs avec le « + » sur leur photo ou dans Découvrir.
+            </p>
+          </div>
+        ) : (
+          videos.map((v) => <VideoCard key={v.id} video={v} />)
+        )}
       </div>
 
       <BottomNav />
