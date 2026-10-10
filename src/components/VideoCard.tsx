@@ -216,12 +216,10 @@ export function VideoCard({ video }: { video: FeedVideo }) {
           aria-label="Like"
           className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <Heart
-            className={liked ? "size-9 text-primary" : "size-9 text-foreground"}
-            fill={liked ? "currentColor" : "none"}
-            strokeWidth={1.8}
-          />
-          <span className="text-xs font-semibold text-foreground text-shadow-soft">
+          <span className="flex size-12 items-center justify-center rounded-full border border-border bg-background/50 text-2xl backdrop-blur">
+            {liked ? "❤️" : "🤍"}
+          </span>
+          <span className="text-xs font-bold text-foreground text-shadow-soft">
             {formatCount(likeCount)}
           </span>
         </button>
@@ -234,8 +232,10 @@ export function VideoCard({ video }: { video: FeedVideo }) {
           aria-label="Commentaires"
           className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <MessageCircle className="size-9 text-foreground" strokeWidth={1.8} />
-          <span className="text-xs font-semibold text-foreground text-shadow-soft">
+          <span className="flex size-12 items-center justify-center rounded-full border border-border bg-background/50 text-2xl backdrop-blur">
+            💬
+          </span>
+          <span className="text-xs font-bold text-foreground text-shadow-soft">
             {formatCount(video.comments_count)}
           </span>
         </button>
@@ -243,42 +243,40 @@ export function VideoCard({ video }: { video: FeedVideo }) {
         <button
           onClick={() => {
             playPop();
-            setSaved((s) => !s);
+            toggleSaved(video.id);
           }}
           aria-pressed={saved}
           aria-label="Enregistrer"
           className="flex flex-col items-center gap-1 transition-transform active:scale-90"
         >
-          <Bookmark
-            className={saved ? "size-9 text-accent" : "size-9 text-foreground"}
-            fill={saved ? "currentColor" : "none"}
-            strokeWidth={1.8}
-          />
-          <span className="text-xs font-semibold text-foreground text-shadow-soft">
-            {saved ? "Enregistré" : "Enregistrer"}
+          <span
+            className={`flex size-12 items-center justify-center rounded-full border bg-background/50 text-2xl backdrop-blur ${saved ? "border-primary" : "border-border"}`}
+          >
+            📌
+          </span>
+          <span className="text-xs font-bold text-foreground text-shadow-soft">
+            {saved ? "Favori" : "Favoris"}
           </span>
         </button>
 
-        <div className="relative flex flex-col items-center">
-          <button
-            onClick={onShare}
-            aria-label="Partager"
-            className="flex flex-col items-center gap-1 transition-transform active:scale-90"
-          >
-            <Share2 className="size-9 text-foreground" strokeWidth={1.8} />
-            <span className="text-xs font-semibold text-foreground text-shadow-soft">
-              Partager
-            </span>
-          </button>
-        </div>
+        <button
+          onClick={onShare}
+          aria-label="Partager"
+          className="flex flex-col items-center gap-1 transition-transform active:scale-90"
+        >
+          <span className="flex size-12 items-center justify-center rounded-full border border-border bg-background/50 text-2xl backdrop-blur">
+            ↗️
+          </span>
+          <span className="text-xs font-bold text-foreground text-shadow-soft">Partager</span>
+        </button>
       </div>
 
       {/* Caption */}
-      <div className="absolute bottom-44 left-4 z-10 max-w-[70%] space-y-2">
-        <p className="text-base font-bold text-foreground text-shadow-soft">@{video.username}</p>
+      <div className="absolute bottom-28 left-4 z-10 max-w-[72%] space-y-2">
+        <p className="text-lg font-bold text-foreground text-shadow-soft">@{video.username}</p>
         <p className="text-sm text-foreground/90 text-shadow-soft">{video.description}</p>
-        <p className="flex items-center gap-2 text-xs text-foreground/80 text-shadow-soft">
-          <Music2 className="size-3.5" /> Son original — {video.username}
+        <p className="inline-flex max-w-full items-center gap-2 truncate rounded-full border border-border bg-background/50 px-3 py-1.5 text-xs text-foreground backdrop-blur">
+          <Music2 className="size-3.5 shrink-0" /> Son original - {video.username} 🎵
         </p>
       </div>
 
