@@ -19,7 +19,6 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [likeCount, setLikeCount] = useState(video.likes_count);
   const [paused, setPaused] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const muted = useMuted();
   const profile = useLocalProfile();
@@ -27,6 +26,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
 
   const isMine = profile.username === video.username;
   const following = profile.following.includes(video.username);
+  const saved = profile.saved.includes(video.id);
 
   useEffect(() => {
     const v = videoRef.current;
