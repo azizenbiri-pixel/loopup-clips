@@ -10,7 +10,7 @@ import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
 import { requestAudioUnlock } from "@/lib/audio-unlock";
 import { playPop } from "@/lib/pop-sound";
-import { toggleFollow, useLocalProfile } from "@/lib/local-profile";
+import { toggleFollow, toggleSaved, useLocalProfile } from "@/lib/local-profile";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
