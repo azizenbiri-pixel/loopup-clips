@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from "react";
-import { Bookmark, Heart, MessageCircle, Music2, Play, Plus, Share2 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { Music2, Play, Plus } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatCount } from "@/lib/feed-data";
 import type { FeedVideo } from "@/lib/videos.functions";
-import { toggleVideoLike } from "@/lib/videos.functions";
 import { ShareSheet } from "@/components/ShareSheet";
 import { CommentsSheet } from "@/components/CommentsSheet";
 import { setMuted, useMuted } from "@/lib/mute-store";
 import { requestAudioUnlock } from "@/lib/audio-unlock";
 import { playPop } from "@/lib/pop-sound";
-import { toggleFollow, toggleSaved, useLocalProfile } from "@/lib/local-profile";
+import { toggleSaved, useLocalProfile } from "@/lib/local-profile";
+import { countView, setLike, useFollowToggle, useMyFollows, useMyLikes, useSession } from "@/lib/session";
 
 export function VideoCard({ video }: { video: FeedVideo }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { user } = useSession();
+  const myLikes = useMyLikes();
+  const myFollows = useMyFollows();
+  const followToggle = useFollowToggle();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(video.likes_count);
   const [paused, setPaused] = useState(false);
@@ -22,10 +28,15 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   const [shareOpen, setShareOpen] = useState(false);
   const muted = useMuted();
   const profile = useLocalProfile();
-  const like = useServerFn(toggleVideoLike);
+  useEffect(() => {
+    setLiked(myLikes.includes(video.id));
+  }, [myLikes, video.id]);
 
-  const isMine = profile.username === video.username;
-  const following = profile.following.includes(video.username);
+  const isMine = !!user && video.user_id === user.id;
+  const following = !!video.user_id && myFollows.includes(video.user_id);
+  const needLogin = () => {
+    navigate({ to: "/auth" });
+  };
   const saved = profile.saved.includes(video.id);
 
   useEffect(() => {
@@ -47,6 +58,7 @@ export function VideoCard({ video }: { video: FeedVideo }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry && entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          countView(video.id);
           v.muted = false;
           v.play().catch(() => {
             // Autoplay avec son bloqué : muet le temps du premier geste
@@ -108,14 +120,15 @@ export function VideoCard({ video }: { video: FeedVideo }) {
   };
 
   const onLike = async () => {
+    if (!user) return needLogin();
     playPop();
     const delta = liked ? -1 : 1;
     const previous = likeCount;
     setLiked(!liked);
     setLikeCount(Math.max(previous + delta, 0));
     try {
-      const next = await like({ data: { videoId: video.id, delta } });
-      setLikeCount(next);
+      await setLike(user.id, video.id, delta === 1);
+      void qc.invalidateQueries({ queryKey: ["myLikes"] });
     } catch {
       setLiked(liked);
       setLikeCount(previous);
@@ -196,11 +209,12 @@ export function VideoCard({ video }: { video: FeedVideo }) {
               loading="lazy"
             />
           </Link>
-          {!isMine && !following && (
+          {!isMine && !following && video.user_id && (
             <button
               onClick={() => {
                 playPop();
-                toggleFollow(video.username);
+                if (!user) return needLogin();
+                void followToggle(video.user_id!, true);
               }}
               aria-label="S'abonner"
               className="absolute -bottom-2 left-1/2 flex size-6 -translate-x-1/2 items-center justify-center rounded-full bg-brand-gradient transition-all duration-300 animate-in fade-in zoom-in active:scale-90"
