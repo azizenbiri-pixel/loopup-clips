@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { addComment } from "@/lib/videos.functions";
 import { commentsQueryOptions } from "@/lib/videos-queries";
+import { Link } from "@tanstack/react-router";
+import { DEFAULT_AVATAR, useMyProfile } from "@/lib/session";
 
 type Props = {
   videoId: string;
@@ -12,12 +14,12 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
-const MY_AVATAR = "https://api.dicebear.com/9.x/avataaars/svg?seed=moi&backgroundColor=ffd5dc";
 
 export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
   const [draft, setDraft] = useState("");
   const queryClient = useQueryClient();
   const post = useServerFn(addComment);
+  const { profile } = useMyProfile();
 
   const { data: comments = [], isLoading } = useQuery({
     ...commentsQueryOptions(videoId),
@@ -26,7 +28,14 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
 
   const mutation = useMutation({
     mutationFn: (text: string) =>
-      post({ data: { videoId, username: "toi", avatarUrl: MY_AVATAR, text } }),
+      post({
+        data: {
+          videoId,
+          username: profile!.username,
+          avatarUrl: profile!.avatar_url ?? DEFAULT_AVATAR(profile!.username),
+          text,
+        },
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", videoId] });
       queryClient.invalidateQueries({ queryKey: ["videos"] });
@@ -38,7 +47,7 @@ export function CommentsSheet({ videoId, open, onOpenChange }: Props) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || mutation.isPending) return;
+    if (!text || mutation.isPending || !profile) return;
     setDraft("");
     mutation.mutate(text);
   };
